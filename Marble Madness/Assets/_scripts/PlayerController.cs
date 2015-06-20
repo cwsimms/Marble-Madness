@@ -39,7 +39,8 @@ public class PlayerController : MonoBehaviour
 	public Vector3 truespeed;
 	public float subTimeLimit;
 	private int count; 
-	private Vector3 spawn;
+	private Vector3 initialSpawn;
+    private Vector3 currentSpawn;
 	public GameText gameText;
 	public Joystick jstick;
 	private ParticleSystem playerExplode;
@@ -53,10 +54,12 @@ public class PlayerController : MonoBehaviour
 	bool isSlowMo;
 	bool isFastMo;
 	bool isBrakes;
+    bool checkpoint;
 
 	//initiates UI text
 	void Start ()
 	{
+        //lots of initial varible value assignments
 		playerRender = GetComponent<Renderer>();
 		timerActive = true;
 		onGui = false;
@@ -64,8 +67,9 @@ public class PlayerController : MonoBehaviour
 		isFastMo = false;
 		fastTimer = false;
 		isBrakes = false;
+        checkpoint = false;
         jumpTimer = 0.1f;
-        spawn = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
+        initialSpawn = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
 		this.gameObject.GetComponent<TrailRenderer>().enabled = false;
 		gameText.timeText.text = "";
 		count = 0;
@@ -94,7 +98,6 @@ public class PlayerController : MonoBehaviour
 		{
 			grounded = true;
 		}
-
 		else 
 		{
 			grounded = false;
@@ -197,6 +200,13 @@ public class PlayerController : MonoBehaviour
 			Time.timeScale = 1;
 			speed = 250;
 		}
+
+        if (timeLimit <= 0)
+        {
+            livesCount -= 1;
+            noCheckpoint();
+        }
+
 	}
 	
 
@@ -226,6 +236,11 @@ public class PlayerController : MonoBehaviour
 			count = count + 1;
 			SetCountText();
 		}
+        if (other.gameObject.tag == "Checkpoint")
+        {
+            currentSpawn = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
+            checkpoint = true;
+        }
 		if (other.gameObject.tag == "OutOfBounds")
 		{
             Destroy();
@@ -290,11 +305,21 @@ public class PlayerController : MonoBehaviour
 	{
 		livesCount = livesCount - 1;
 		playerRender.enabled = false;
-		this.transform.position = spawn;
+		this.transform.position = currentSpawn;
 		GetComponent<Rigidbody>().velocity = Vector3.zero;
 		GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
 		playerRender.enabled = true;
 	}
+
+    public void noCheckpoint()
+    {
+        livesCount = livesCount - 1;
+        playerRender.enabled = false;
+        this.transform.position = initialSpawn;
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        playerRender.enabled = true;
+    }
 
     public void Destroy()
     {
