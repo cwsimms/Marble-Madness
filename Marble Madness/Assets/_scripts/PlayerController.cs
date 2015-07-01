@@ -35,6 +35,11 @@ public class PlayerController : MonoBehaviour
 	public float livesCount;
 	public float rayHeight;
 	public float ballDrag;
+    private float newHoriz;
+    private float newVert;
+    public float brakeFactor;
+    public Vector3 threshold;
+    public Vector3 magnitude;
     private float jumpTimer;
 	public Vector3 truespeed;
 	public float subTimeLimit;
@@ -56,6 +61,9 @@ public class PlayerController : MonoBehaviour
 	bool isBrakes;
     bool checkpoint;
 
+
+    public float brakeThresh = 0.9f;
+    public float vectorDistance = 0f;
 	//initiates UI text
 	void Start ()
 	{
@@ -86,9 +94,24 @@ public class PlayerController : MonoBehaviour
 		jump = 15;
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
+        Vector3 velocity = this.GetComponent<Rigidbody>().velocity.normalized;
 		Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
 		Vector3 jumpHeight = new Vector3(0.0f, jump, 0.0f);
 		GetComponent<Rigidbody>().AddForce(movement * speed * Time.deltaTime);
+        magnitude = movement + velocity;
+        if (Input.anyKey)
+        {
+            vectorDistance = Vector3.Distance(movement, velocity);
+            if ( vectorDistance > brakeThresh)
+            {
+                this.GetComponent<Rigidbody>().velocity *= brakeFactor;
+            }
+        }
+
+
+        Debug.Log(jumpTimer);
+        Debug.Log(grounded);
+
 
         //checks if the player is grounded
 		RaycastHit hit;
@@ -108,7 +131,7 @@ public class PlayerController : MonoBehaviour
 		{
             jumpTimer += Time.deltaTime;
 		}
-		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.1)
+		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.1f)
 		{
 			GetComponent<Rigidbody>().AddForce(jumpHeight * jump);
             jumpTimer = 0.0f;
@@ -127,13 +150,6 @@ public class PlayerController : MonoBehaviour
 			SetCountText();
 		}
 
-		//respawns (OUTDATED)
-		/*
-		if (transform.position.y <= -20)
-		{
-
-		}
-		*/
 
 		//slowmo effect
 		if (isSlowMo == true)
@@ -251,14 +267,27 @@ public class PlayerController : MonoBehaviour
     //collisions
 	void OnCollisionEnter(Collision other)
 	{
-        Debug.Log(other.gameObject.tag);
 		if (other.gameObject.tag == "SpikeWall")
 		{
-            Destroy();
+            if (checkpoint == true)
+            {
+                Destroy();
+            }
+            else
+            {
+                noCheckpoint();
+            }
 		}
         if (other.gameObject.tag == "Lava")
         {
-            Destroy();
+            if (checkpoint == true)
+            {
+                Destroy();
+            }
+            else
+            {
+                noCheckpoint();
+            }
         }
 	}
 
