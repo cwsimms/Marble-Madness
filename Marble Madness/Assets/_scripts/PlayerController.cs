@@ -38,10 +38,10 @@ public class PlayerController : MonoBehaviour
     private float newHoriz;
     private float newVert;
     public float brakeFactor;
-    public Vector3 threshold;
-    public Vector3 magnitude;
+    private Vector3 threshold;
+    private Vector3 magnitude;
     private float jumpTimer;
-	public Vector3 truespeed;
+	private Vector3 truespeed;
 	public float subTimeLimit;
 	private int count; 
 	private Vector3 initialSpawn;
@@ -76,7 +76,7 @@ public class PlayerController : MonoBehaviour
 		fastTimer = false;
 		isBrakes = false;
         checkpoint = false;
-        jumpTimer = 0.1f;
+        jumpTimer = 0.01f;
         initialSpawn = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
 		this.gameObject.GetComponent<TrailRenderer>().enabled = false;
 		gameText.timeText.text = "";
@@ -91,20 +91,23 @@ public class PlayerController : MonoBehaviour
 	{
 		truespeed = GetComponent<Rigidbody>().velocity;
 		//movement
-		jump = 15;
+		jump = 20;
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
         Vector3 velocity = this.GetComponent<Rigidbody>().velocity.normalized;
+        Vector3 rawVelocity = this.GetComponent<Rigidbody>().velocity;
 		Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
 		Vector3 jumpHeight = new Vector3(0.0f, jump, 0.0f);
-		GetComponent<Rigidbody>().AddForce(movement * speed * Time.deltaTime);
+		GetComponent<Rigidbody>().AddForce(movement * Mathf.Clamp(speed, 0.0f, 200.0f) * Time.deltaTime);
         magnitude = movement + velocity;
-        if (Input.anyKey)
+        if (Input.anyKey && grounded == true)
         {
             vectorDistance = Vector3.Distance(movement, velocity);
             if ( vectorDistance > brakeThresh)
             {
-                this.GetComponent<Rigidbody>().velocity *= brakeFactor;
+                rawVelocity.x *= brakeFactor;
+                rawVelocity.z *= brakeFactor;
+                this.GetComponent<Rigidbody>().velocity = rawVelocity;
             }
         }
 
@@ -131,7 +134,7 @@ public class PlayerController : MonoBehaviour
 		{
             jumpTimer += Time.deltaTime;
 		}
-		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.1f)
+		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.01f)
 		{
 			GetComponent<Rigidbody>().AddForce(jumpHeight * jump);
             jumpTimer = 0.0f;
