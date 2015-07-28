@@ -76,7 +76,7 @@ public class PlayerController : MonoBehaviour
 		fastTimer = false;
 		isBrakes = false;
         checkpoint = false;
-        jumpTimer = 0.01f;
+        jumpTimer = 0.02f;
         initialSpawn = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
 		this.gameObject.GetComponent<TrailRenderer>().enabled = false;
 		gameText.timeText.text = "";
@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour
 		{
             jumpTimer += Time.deltaTime;
 		}
-		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.01f)
+		if  (Input.GetButtonDown("Fire1") && grounded == true && jumpTimer >= 0.02f)
 		{
 			GetComponent<Rigidbody>().AddForce(jumpHeight * jump);
             jumpTimer = 0.0f;
@@ -197,7 +197,7 @@ public class PlayerController : MonoBehaviour
 			}
 		}
 
-        //brakes/slows the player//
+        //brakes/slows the player
 		if (isBrakes == true)
 		{
 			if (subTimeLimit > 0)
@@ -293,6 +293,18 @@ public class PlayerController : MonoBehaviour
             }
         }
 	}
+
+    void OnCollisionStay(Collision other)
+    {
+        if (other.gameObject.tag == "Platform")
+        {
+            transform.parent = other.transform;
+        }
+        else 
+        {
+            transform.parent = null;
+        }
+    }
 
 	//Text output and game endings
 	void SetCountText ()
