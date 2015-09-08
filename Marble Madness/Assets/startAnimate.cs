@@ -10,7 +10,7 @@ public class startAnimate : MonoBehaviour {
         if (other.gameObject.tag == "Player")
         {
            
-            GetComponent<Animation>().Play();
+            GetComponentInChildren<Animation>().Play();
         }
         else 
         { 

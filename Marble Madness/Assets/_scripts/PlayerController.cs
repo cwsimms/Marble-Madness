@@ -1,12 +1,12 @@
 //Rollerball game, main player script
 
-/*TODO: Increase input sensitivity during slowmo
+/*TODO:
  *      Make UI and controls for iOS
  *      Make models for pickups/polish in general
  * 		Levels
  * 		Think of more powerups/features in general
  * 		Polish particle effects
- * 		Alternate respawn script that doesn't rely on negative position
+ * 		
  * EVENTUALLY: Multiplayer mode with ablity to drop bombs/create holes in the ground (need to learn how to subtract through scripting)
  * In-game content creator with user uploading, browsing, and downloading functionality
  * Random obstacle spawner?
@@ -50,6 +50,9 @@ public class PlayerController : MonoBehaviour
 	public Joystick jstick;
 	private ParticleSystem playerExplode;
 	private Renderer playerRender;
+    public GameObject raft;
+    Rigidbody raftrb;
+    public Vector3 raftv;
 
 	bool timerActive;
 	bool fastTimer;
@@ -89,6 +92,8 @@ public class PlayerController : MonoBehaviour
 	//controls
 	void FixedUpdate ()
 	{
+       raftrb = raft.GetComponent<Rigidbody>();
+        raftv = raftrb.velocity;
 		truespeed = GetComponent<Rigidbody>().velocity;
 		//movement
 		jump = 20;
@@ -292,20 +297,21 @@ public class PlayerController : MonoBehaviour
                 noCheckpoint();
             }
         }
+        if (other.gameObject.tag == "Platform")
+        {
+            this.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            this.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        }
 	}
 
     void OnCollisionStay(Collision other)
     {
-        if (other.gameObject.tag == "Platform")
+        if (other.gameObject.tag == "Platform" && raftrb.velocity.z >= 13)
         {
-            transform.parent = other.transform;
-        }
-        else 
-        {
-            transform.parent = null;
+            this.GetComponent<Rigidbody>().MovePosition(raftrb.transform.position + transform.forward * Time.deltaTime);
         }
     }
-
+    
 	//Text output and game endings
 	void SetCountText ()
 	{
