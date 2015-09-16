@@ -301,12 +301,13 @@ public class PlayerController : MonoBehaviour
         {
             this.GetComponent<Rigidbody>().velocity = Vector3.zero;
             this.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            raft = other.gameObject;
         }
 	}
 
     void OnCollisionStay(Collision other)
     {
-        if (other.gameObject.tag == "Platform" && raftrb.velocity.z >= 13)
+        if (other.gameObject.tag == "Platform" && raftrb.velocity.z >= 10)
         {
             this.GetComponent<Rigidbody>().MovePosition(raftrb.transform.position + transform.forward * Time.deltaTime);
         }
