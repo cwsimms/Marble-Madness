@@ -63,6 +63,7 @@ public class PlayerController : MonoBehaviour
 	bool isFastMo;
 	bool isBrakes;
     bool checkpoint;
+    public bool isPlatform;
 
 
     public float brakeThresh = 0.9f;
@@ -92,8 +93,11 @@ public class PlayerController : MonoBehaviour
 	//controls
 	void FixedUpdate ()
 	{
-       raftrb = raft.GetComponent<Rigidbody>();
-        raftv = raftrb.velocity;
+        if (isPlatform == true)
+        {
+            raftrb = raft.GetComponent<Rigidbody>();
+            raftv = raftrb.velocity;
+        }
 		truespeed = GetComponent<Rigidbody>().velocity;
 		//movement
 		jump = 20;
@@ -269,7 +273,12 @@ public class PlayerController : MonoBehaviour
 		{
             Destroy();
 		}
-      
+
+        if (other.gameObject.tag == "Goal")
+        {
+            levelCLear();
+        }
+
 	}
 		
     //collisions
@@ -297,17 +306,21 @@ public class PlayerController : MonoBehaviour
                 noCheckpoint();
             }
         }
-        if (other.gameObject.tag == "Platform")
+        if (isPlatform == true && other.gameObject.tag == "Platform")
         {
             this.GetComponent<Rigidbody>().velocity = Vector3.zero;
             this.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             raft = other.gameObject;
         }
+        else if (isPlatform == false) 
+        {
+            raft = null;
+        }
 	}
 
     void OnCollisionStay(Collision other)
     {
-        if (other.gameObject.tag == "Platform" && raftrb.velocity.z >= 10)
+        if (isPlatform == true && other.gameObject.tag == "Platform" && raftrb.velocity.z >= 10)
         {
             this.GetComponent<Rigidbody>().MovePosition(raftrb.transform.position + transform.forward * Time.deltaTime);
         }
@@ -321,16 +334,11 @@ public class PlayerController : MonoBehaviour
 		gameText.lifeText.text = "Lives remaining: " + livesCount.ToString();
 		if(count >= 13)
 		{
-			gameText.winText.text = "YOU WIN!";
-			timerActive = false;
-			gameText.timeText.text = "";
+            levelCLear();
 		}
 		if (timeLimit <= 0 || livesCount == 0)
 		{
-			gameText.timeText.text = "Time remaining: 0.0";
-			gameText.winText.text = "GAME OVER";
-			Time.timeScale = 0;
-			onGui = true;
+            gameOver();
 		}
 	}
 
@@ -378,6 +386,21 @@ public class PlayerController : MonoBehaviour
         playerExplode.Play();
         playerExplode.Clear();
         Respawn();
+    }
+
+    public void levelCLear()
+    {
+        gameText.winText.text = "YOU WIN!";
+        timerActive = false;
+        gameText.timeText.text = "";
+    }
+
+    public void gameOver()
+    {
+        gameText.timeText.text = "Time remaining: 0.0";
+        gameText.winText.text = "GAME OVER";
+        Time.timeScale = 0;
+        onGui = true;
     }
 
 	//restarts the game
